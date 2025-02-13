@@ -1,0 +1,9 @@
+clusters:
+  - cluster_name: "cn_sandbox"
+    api_url: "https://192.168.1.10:6443"
+    token: "xxxxxxx"
+
+  - cluster_name: "cn_preonline"
+    api_url: "https://192.168.1.10:6443"
+    token: "xxxxxxx"
+
