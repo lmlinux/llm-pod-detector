@@ -260,6 +260,11 @@ elif selected_function == "集群概览":
     if 'cluster_stats' not in st.session_state or refresh_flag:
         all_stats = []
         with st.spinner("正在扫描所有集群..."):
+            # 初始化进度条
+            progress_bar = st.progress(0)
+            total_clusters = len(clusters)
+            processed = 0
+
             with ThreadPoolExecutor(max_workers=5) as executor:
                 futures = []
                 for idx, cluster in enumerate(clusters):
@@ -276,12 +281,22 @@ elif selected_function == "集群概览":
                         temp_results.append( (index, result) )
                     except Exception as e:
                         st.error(f"集群扫描失败: {str(e)}")
-                
+                    finally:
+                        # 更新进度条
+                        processed += 1
+                        progress = processed / total_clusters
+                        progress_bar.progress(min(progress, 1.0))  # 确保不超过100%
+
+                # 处理完成后排序结果
                 temp_results.sort(key=lambda x: x[0])
                 all_stats = [result for (index, result) in temp_results]
 
+            # 扫描完成后移除进度条
+            progress_bar.empty()
+
         st.session_state.cluster_stats = all_stats
-    
+
+    # 剩余保持原有统计和展示逻辑不变...
     total_stats = {
         "nodes": 0,
         "pods": 0,
@@ -300,6 +315,7 @@ elif selected_function == "集群概览":
             valid_clusters.append(stats)
         else:
             total_stats["errors"] += 1
+
       
     cols = st.columns(5)
     cols[0].metric("🌐 集群总数", len(clusters), delta_color="off")
